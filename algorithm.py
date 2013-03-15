@@ -29,12 +29,20 @@ class ScheduldingAlgorithm:
         self.hosts.append(PhysicalHost('host2'))
         self.hosts.append(PhysicalHost('host3'))
     
-    def show(self):
-        for vm in self.VMs:
-            vm.show_props()
-        
+
+    def show_hosts(self):
         for host in self.hosts:
             host.show_host_props()
+        print ''
+
+
+    def show_vms(self):
+        for vm in self.VMs:
+            vm.show_props()
+
+    def show(self):
+        self.show_vms()
+        self.show_hosts()
     
     def first_fit_descending(self):
         print 'Running FFD placement algorithm'
@@ -101,7 +109,7 @@ class ScheduldingAlgorithm:
         no_changes_iterations = 0
         old_delta = 0
         result_iter = 0
-        for i in xrange(10000):
+        for i in xrange(100):
             result_iter = i
             temp_hosts = deepcopy(self.hosts)
             seed()
@@ -109,27 +117,40 @@ class ScheduldingAlgorithm:
             seed()
             host2 = choice(temp_hosts)
             seed()
-            #host1.show_host_props()
             try:
                 vm = choice(host1.assigned_vms)
             except IndexError:
                 continue
+                
             host1.migrate(vm, host2)
             delta = self.cost_func(self.hosts) - self.cost_func(temp_hosts)
-            if self.cost_func(self.hosts) >= self.cost_func(temp_hosts):
+            if delta>=0:
                 self.hosts = temp_hosts
-                #no_changes_iterations = 0
-            else:
+                    #no_changes_iterations = 0
+            else: 
                 if k*temp>0:
-                    if math.exp(self.cost_func(self.hosts) - self.cost_func(temp_hosts)) / (k * temp) > random.random():
+                    r = random.random()
+                    print '///Debug stuff///'
+                    print i
+                    print delta
+                    print math.exp(delta/temp)
+                    #print math.exp(-(delta/temp)) 
+                    print temp
+                    print r
+                    print '/////////////////'
+                    if math.exp(delta/temp) > r:
                         self.hosts = temp_hosts
+                        
             temp *= 0.7
             if delta == old_delta:
                 no_changes_iterations += 1
+                break #опционально
             else:
                 no_changes_iterations = 0 
-            if no_changes_iterations>20:
-                break
+                if no_changes_iterations>10:
+                    break
+            old_delta = delta
+            self.show_hosts()
         return result_iter   
             
 
