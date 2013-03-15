@@ -19,12 +19,12 @@ import math
 class ScheduldingAlgorithm:
 
     def __init__(self):
-        self.VMs = []
+        self.VMs = []   # initially create a cloud with 3 VMs
         self.VMs.append(VMInstance('computing', 'vm1'))
         self.VMs.append(VMInstance('computing', 'vm2'))
         self.VMs.append(VMInstance('web-server', 'vm3'))
         
-        self.hosts = []
+        self.hosts = [] # and 3 hosts
         self.hosts.append(PhysicalHost('host1'))
         self.hosts.append(PhysicalHost('host2'))
         self.hosts.append(PhysicalHost('host3'))
@@ -130,6 +130,7 @@ class ScheduldingAlgorithm:
             else: 
                 if k*temp>0:
                     r = random.random()
+                    # some debug information
                     print '///Debug stuff///'
                     print i
                     print delta
@@ -144,37 +145,11 @@ class ScheduldingAlgorithm:
             temp *= 0.7
             if delta == old_delta:
                 no_changes_iterations += 1
-                break #опционально
+                #break #optionally
             else:
                 no_changes_iterations = 0 
-                if no_changes_iterations>10:
+                if no_changes_iterations>2:
                     break
             old_delta = delta
             self.show_hosts()
         return result_iter   
-            
-
-test = ScheduldingAlgorithm()
-test.show()
-print '\n**********************\n'
-test.first_fit_descending()
-print '\n**********************\n'
-test.show()
-print '\n**********************\n'
-test.add_vm(VMInstance('web-server', 'vm4'))
-test.add_vm(VMInstance('computing', 'vm5'))
-print '\n**********************\n'
-test.show()
-print '\n**********************\n'
-print 'Now testing simulated annealing'
-
-test2 = ScheduldingAlgorithm()
-test2.hosts[0].run_vm(test2.VMs[0])
-test2.hosts[1].run_vm(test2.VMs[1])
-test2.hosts[2].run_vm(test2.VMs[2])
-test2.show()
-print '\n**********************\n'
-i = test2.simulated_annealing()
-print '\n**********************\n'
-test2.show()
-print 'made '+str(i)+' iterstions'
