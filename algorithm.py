@@ -102,6 +102,22 @@ class ScheduldingAlgorithm:
                 cost += 1
         return cost
     
+    def root_mean_sqr(self, hosts):
+        cost_cpu = 0
+        cost_mem = 0
+        cost_hdd = 0
+        for host in hosts:
+            cost_cpu += math.pow((host.cpu_cap - host.cpu_available), 2)
+            cost_mem += math.pow((host.mem_cap - host.mem_available), 2)
+            cost_hdd += math.pow((host.hdd_cap - host.hdd_available), 2)
+        cost_cpu = math.sqrt(cost_cpu/len(hosts))
+        cost_mem = math.sqrt(cost_mem/len(hosts))
+        cost_hdd = math.sqrt(cost_hdd/len(hosts))
+        
+        cost = (cost_cpu + cost_mem + cost_hdd)/3
+        return cost
+    
+    
     def simulated_annealing(self):
         k = 1.3806488 * (10**(-23))
         print 'Running Simulated Annealing algoritm'
@@ -141,6 +157,8 @@ class ScheduldingAlgorithm:
                     print '/////////////////'
                     if math.exp(delta/temp) > r:
                         self.hosts = temp_hosts
+                    else:
+                        no_changes_iterations = 0
                         
             temp *= 0.7
             if delta == old_delta:
@@ -148,8 +166,63 @@ class ScheduldingAlgorithm:
                 #break #optionally
             else:
                 no_changes_iterations = 0 
-                if no_changes_iterations>2:
-                    break
+            if no_changes_iterations>2:
+                break
+            old_delta = delta
+            self.show_hosts()
+        return result_iter   
+    
+    
+    def simulated_annealing_abstract(self, cost_function):
+        k = 1.3806488 * (10**(-23))
+        print 'Running Simulated Annealing algoritm'
+        temp = 1000
+        no_changes_iterations = 0
+        old_delta = 0
+        result_iter = 0
+        for i in xrange(100):
+            result_iter = i
+            temp_hosts = deepcopy(self.hosts)
+            seed()
+            host1 = choice(temp_hosts)
+            seed()
+            host2 = choice(temp_hosts)
+            seed()
+            try:
+                vm = choice(host1.assigned_vms)
+            except IndexError:
+                continue
+                
+            host1.migrate(vm, host2)
+            delta = cost_function(self.hosts) - cost_function(temp_hosts)
+            if delta>=0:
+                self.hosts = temp_hosts
+                    #no_changes_iterations = 0
+            else: 
+                if k*temp>0:
+                    r = random.random()
+                    # some debug information
+                    print '///Debug stuff///'
+                    print i
+                    print delta
+                    print math.exp(delta/temp)
+                    #print math.exp(-(delta/temp)) 
+                    print temp
+                    print r
+                    print '/////////////////'
+                    if math.exp(delta/temp) > r:
+                        self.hosts = temp_hosts
+                    else:
+                        no_changes_iterations = 0
+                        
+            temp *= 0.7
+            if delta == old_delta:
+                no_changes_iterations += 1
+                #break #optionally
+            else:
+                no_changes_iterations = 0 
+            if no_changes_iterations>2:
+                break
             old_delta = delta
             self.show_hosts()
         return result_iter   

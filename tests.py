@@ -26,7 +26,8 @@ test2.hosts[1].run_vm(test2.VMs[1])
 test2.hosts[2].run_vm(test2.VMs[2])
 test2.show()
 print '\n**********************\n'
-i = test2.simulated_annealing()
+#i = test2.simulated_annealing()
+i = test2.simulated_annealing_abstract(test2.cost_func)
 print '\n**********************\n'
 test2.show_hosts()
 print 'made '+str(i)+' iterations'
